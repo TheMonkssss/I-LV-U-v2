@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Love You Matrix</title>
+  <style>
+    :root {
+      --pink-text: #ff69b4;
+      --neon-glow: 0 0 10px #ff69b4, 0 0 20px #ff69b4, 0 0 30px #ff69b4;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #000000 0%, #0a0a0a 50%, #050505 100%);
+      font-family: "Courier New", Courier, monospace;
+      cursor: crosshair;
+    }
+
+    canvas#matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 0 4px var(--pink-text));
+    }
+
+    .Love__You {
+      position: fixed;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      color: var(--pink-text);
+      padding: 1rem 2rem;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
+      z-index: 2;
+      animation: pulse 3s infinite ease-in-out, float 6s ease-in-out infinite;
+      text-align: center;
+      text-shadow: var(--neon-glow);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: translateX(-50%) scale(1);
+      }
+      50% {
+        transform: translateX(-50%) scale(1.08);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        top: 5%;
+      }
+      50% {
+        top: 4.6%;
+      }
+    }
+
+    .heart {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background-color: var(--pink-text);
+      transform: rotate(45deg);
+      animation: floatUp 1.6s ease-out forwards;
+      z-index: 3;
+      filter: drop-shadow(0 0 8px var(--pink-text));
+      opacity: 0.9;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      top: -16px;
+      left: 0;
+    }
+    .heart::after {
+      left: -16px;
+      top: 0;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: rotate(45deg) scale(1) translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: rotate(60deg) scale(1.2) translateY(-40px);
+        opacity: 1;
+      }
+      100% {
+        transform: rotate(75deg) scale(0.8) translateY(-150px);
+        opacity: 0;
+      }
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, var(--pink-text) 100%);
+      filter: drop-shadow(0 0 8px var(--pink-text));
+      animation: sparkleAnim 1.5s ease-out forwards;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    @keyframes sparkleAnim {
+      0% {
+        opacity: 1;
+        transform: scale(1) translate(0, 0);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0) translate(var(--dx), var(--dy));
+      }
+    }
+
+    @keyframes explodeHeart {
+      0% {
+        transform: rotate(45deg) scale(0.8) translate(0, 0);
+        opacity: 0.9;
+      }
+      100% {
+        transform: rotate(var(--rot)) scale(1.2) translate(var(--dx), var(--dy));
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrix"></canvas>
+  <div class="Love__You">I LOVE YOU ❤️</div>
+
+  <script>
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    let width, height;
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const letters = "I LOVE YOU ";
+    const fontSize = 20;
+    let columns = Math.floor(width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.07)";
+      ctx.fillRect(0, 0, width, height);
+
+      columns = Math.floor(width / fontSize);
+      if (drops.length < columns) {
+        for (let i = drops.length; i < columns; i++) {
+          drops[i] = 1;
+        }
+      } else if (drops.length > columns) {
+        drops.splice(columns);
+      }
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        const size = 15 + Math.random() * 10;
+        ctx.font = `${size}px monospace`;
+        const opacity = 0.5 + Math.random() * 0.5;
+        ctx.fillStyle = `rgba(255, 105, 180, ${opacity})`;
+        ctx.shadowColor = "pink";
+        ctx.shadowBlur = 10;
+        ctx.fillText(text, x, y);
+
+        if (y > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(draw, 33);
+
+    function randomColor() {
+      const colors = ["#ff69b4", "#ff1493", "#ffb6c1", "#ffc0cb"];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function createHeart(x, y) {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = `${x - 15}px`;
+      heart.style.top = `${y - 15}px`;
+      heart.style.backgroundColor = randomColor();
+      heart.style.transform = `rotate(${Math.random() * 90}deg) rotate(45deg)`;
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 1500);
+    }
+
+    function createSparkle(x, y) {
+      for (let i = 0; i < 8; i++) {
+        const sparkle = document.createElement("div");
+        sparkle.className = "sparkle";
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+        sparkle.style.backgroundColor = randomColor();
+        sparkle.style.setProperty("--dx", `${(Math.random() - 0.5) * 150}px`);
+        sparkle.style.setProperty("--dy", `${(Math.random() - 0.5) * 150}px`);
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1200);
+      }
+    }
+
+    function createHeartExplosion(x, y) {
+      for (let i = 0; i < 12; i++) {
+        const mini = document.createElement("div");
+        mini.className = "heart";
+        mini.style.width = "14px";
+        mini.style.height = "14px";
+        mini.style.left = `${x}px`;
+        mini.style.top = `${y}px`;
+        mini.style.opacity = 0.8;
+        mini.style.transform = `rotate(45deg) scale(0.8)`;
+
+        const dx = (Math.random() - 0.5) * 200;
+        const dy = (Math.random() - 0.5) * 200;
+        const rot = Math.random() * 360;
+
+        mini.style.animation = `explodeHeart 1.4s ease-out forwards`;
+        mini.style.setProperty('--dx', `${dx}px`);
+        mini.style.setProperty('--dy', `${dy}px`);
+        mini.style.setProperty('--rot', `${rot}deg`);
+        mini.style.backgroundColor = randomColor();
+
+        document.body.appendChild(mini);
+        setTimeout(() => mini.remove(), 1400);
+      }
+    }
+
+    function handleClick(e) {
+      const x = e.clientX || (e.touches && e.touches[0].clientX);
+      const y = e.clientY || (e.touches && e.touches[0].clientY);
+      if (x && y) {
+        createHeart(x, y);
+        createSparkle(x, y);
+        createHeartExplosion(x, y);
+      }
+    }
+
+    document.addEventListener("click", handleClick);
+    document.addEventListener("touchstart", handleClick);
+  </script>
+
+</body>
+</html>
